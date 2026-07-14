@@ -1,19 +1,8 @@
-# ============================================================
-#   EXPENSE TRACKER — Complete Project
-#   Libraries: Tkinter, tkcalendar, SQLite3
-# ============================================================
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
 import sqlite3
 from datetime import datetime
-
-
-# ─────────────────────────────────────────────
-#  DATABASE SETUP
-# ─────────────────────────────────────────────
-
 def init_db():
     """Create the database and table if they don't exist."""
     conn = sqlite3.connect("expenses.db")
@@ -30,8 +19,6 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-
-
 def fetch_all_expenses():
     """Return all rows from the expenses table."""
     conn = sqlite3.connect("expenses.db")
@@ -40,8 +27,6 @@ def fetch_all_expenses():
     rows = cursor.fetchall()
     conn.close()
     return rows
-
-
 def add_expense(date, payee, category, amount, note):
     """Insert a new expense record."""
     conn = sqlite3.connect("expenses.db")
@@ -52,8 +37,6 @@ def add_expense(date, payee, category, amount, note):
     )
     conn.commit()
     conn.close()
-
-
 def update_expense(expense_id, date, payee, category, amount, note):
     """Update an existing expense record."""
     conn = sqlite3.connect("expenses.db")
@@ -66,8 +49,6 @@ def update_expense(expense_id, date, payee, category, amount, note):
     )
     conn.commit()
     conn.close()
-
-
 def delete_expense(expense_id):
     """Delete an expense record by ID."""
     conn = sqlite3.connect("expenses.db")
@@ -75,8 +56,6 @@ def delete_expense(expense_id):
     cursor.execute("DELETE FROM expenses WHERE id=?", (expense_id,))
     conn.commit()
     conn.close()
-
-
 def search_expenses(keyword):
     """Search expenses by payee, category, or note."""
     conn = sqlite3.connect("expenses.db")
@@ -92,13 +71,7 @@ def search_expenses(keyword):
     conn.close()
     return rows
 
-
-# ─────────────────────────────────────────────
-#  MAIN APPLICATION CLASS
-# ─────────────────────────────────────────────
-
 class ExpenseTrackerApp:
-
     CATEGORIES = [
         "Food & Dining",
         "Transport",
@@ -111,43 +84,33 @@ class ExpenseTrackerApp:
         "Rent",
         "Other",
     ]
-
-    # ── Colour palette ──────────────────────
-    BG_MAIN      = "#1e1e2e"   # dark navy — main background
-    BG_PANEL     = "#2a2a3e"   # slightly lighter panel
-    BG_CARD      = "#313149"   # form card background
-    ACCENT       = "#7c6af7"   # purple accent
+    BG_MAIN = "#1e1e2e"   
+    BG_PANEL = "#2a2a3e"   
+    BG_CARD = "#313149"   
+    ACCENT = "#7c6af7"   
     ACCENT_HOVER = "#6a59e0"
-    TEXT_LIGHT   = "#e0e0f0"
-    TEXT_DIM     = "#9090b0"
-    SUCCESS      = "#4caf82"
-    DANGER       = "#f25f5c"
-    WARNING      = "#f5a623"
-    ROW_ODD      = "#272738"
-    ROW_EVEN     = "#2f2f46"
-    HEADER_BG    = "#3a3a5c"
-
+    TEXT_LIGHT = "#e0e0f0"
+    TEXT_DIM = "#9090b0"
+    SUCCESS = "#4caf82"
+    DANGER = "#f25f5c"
+    WARNING = "#f5a623"
+    ROW_ODD = "#272738"
+    ROW_EVEN = "#2f2f46"
+    HEADER_BG = "#3a3a5c"
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("💸 Expense Tracker")
         self.root.geometry("1150x720")
         self.root.minsize(960, 640)
         self.root.configure(bg=self.BG_MAIN)
-
-        # Track which row is being edited
         self.editing_id = None
-
         self._build_styles()
         self._build_ui()
         self.refresh_table()
         self.update_total_label()
-
-    # ── Ttk styles ──────────────────────────
     def _build_styles(self):
         style = ttk.Style()
         style.theme_use("clam")
-
-        # Treeview body
         style.configure(
             "Custom.Treeview",
             background=self.ROW_ODD,
@@ -173,8 +136,6 @@ class ExpenseTrackerApp:
             "Custom.Treeview.Heading",
             background=[("active", self.ACCENT)],
         )
-
-        # Scrollbar
         style.configure(
             "Custom.Vertical.TScrollbar",
             background=self.BG_PANEL,
@@ -182,8 +143,6 @@ class ExpenseTrackerApp:
             arrowcolor=self.TEXT_DIM,
             borderwidth=0,
         )
-
-        # Combobox
         style.configure(
             "Custom.TCombobox",
             fieldbackground=self.BG_CARD,
@@ -198,10 +157,7 @@ class ExpenseTrackerApp:
             fieldbackground=[("readonly", self.BG_CARD)],
             foreground=[("readonly", self.TEXT_LIGHT)],
         )
-
-    # ── Master layout ────────────────────────
     def _build_ui(self):
-        # ── Top banner ──────────────────────
         banner = tk.Frame(self.root, bg=self.BG_PANEL, height=60)
         banner.pack(fill="x", side="top")
         banner.pack_propagate(False)
@@ -222,21 +178,15 @@ class ExpenseTrackerApp:
             fg=self.SUCCESS,
         )
         self.total_label.pack(side="right", padx=24)
-
-        # ── Body: left form + right table ───
         body = tk.Frame(self.root, bg=self.BG_MAIN)
         body.pack(fill="both", expand=True, padx=16, pady=12)
-
         self._build_form(body)
         self._build_table_section(body)
-
-    # ── LEFT — input form ───────────────────
     def _build_form(self, parent):
         form_frame = tk.Frame(parent, bg=self.BG_CARD, bd=0)
         form_frame.pack(side="left", fill="y", padx=(0, 12), pady=0)
         form_frame.pack_propagate(False)
         form_frame.configure(width=310)
-
         tk.Label(
             form_frame,
             text="Add / Edit Expense",
@@ -244,10 +194,7 @@ class ExpenseTrackerApp:
             bg=self.BG_CARD,
             fg=self.TEXT_LIGHT,
         ).pack(pady=(20, 4), padx=16, anchor="w")
-
         tk.Frame(form_frame, bg=self.ACCENT, height=2).pack(fill="x", padx=16, pady=(0, 16))
-
-        # helper to build a labelled field row
         def field(label_text):
             tk.Label(
                 form_frame,
@@ -256,8 +203,6 @@ class ExpenseTrackerApp:
                 bg=self.BG_CARD,
                 fg=self.TEXT_DIM,
             ).pack(anchor="w", padx=16, pady=(8, 2))
-
-        # Date
         field("📅  Date")
         self.date_entry = DateEntry(
             form_frame,
@@ -269,13 +214,9 @@ class ExpenseTrackerApp:
             font=("Segoe UI", 10),
         )
         self.date_entry.pack(padx=16, pady=(0, 4), anchor="w")
-
-        # Payee
         field("👤  Payee")
         self.payee_var = tk.StringVar()
         self._styled_entry(form_frame, self.payee_var, "e.g. Amazon, Zomato…")
-
-        # Category
         field("🏷️  Category")
         self.category_var = tk.StringVar()
         cat_box = ttk.Combobox(
@@ -289,21 +230,14 @@ class ExpenseTrackerApp:
         )
         cat_box.current(0)
         cat_box.pack(padx=16, pady=(0, 4), anchor="w")
-
-        # Amount
         field("💰  Amount (₹)")
         self.amount_var = tk.StringVar()
         self._styled_entry(form_frame, self.amount_var, "e.g. 500.00")
-
-        # Note
         field("📝  Note (optional)")
         self.note_var = tk.StringVar()
         self._styled_entry(form_frame, self.note_var, "Short description…")
-
-        # Buttons
         btn_frame = tk.Frame(form_frame, bg=self.BG_CARD)
         btn_frame.pack(fill="x", padx=16, pady=20)
-
         self.submit_btn = self._make_button(
             btn_frame, "➕  Add Expense", self.ACCENT, self.on_submit
         )
@@ -314,7 +248,6 @@ class ExpenseTrackerApp:
             fg=self.TEXT_DIM
         ).pack(fill="x")
 
-        # ── Search bar (below buttons) ───────
         tk.Frame(form_frame, bg=self.ACCENT, height=2).pack(fill="x", padx=16, pady=(8, 12))
 
         tk.Label(
@@ -360,8 +293,6 @@ class ExpenseTrackerApp:
             width=28,
         )
         entry.pack(padx=16, pady=(0, 4), anchor="w")
-
-        # Placeholder logic
         if placeholder:
             entry.insert(0, placeholder)
             entry.config(fg=self.TEXT_DIM)
@@ -399,13 +330,9 @@ class ExpenseTrackerApp:
             kwargs["width"] = width
         btn = tk.Button(parent, **kwargs)
         return btn
-
-    # ── RIGHT — table section ───────────────
     def _build_table_section(self, parent):
         right = tk.Frame(parent, bg=self.BG_MAIN)
         right.pack(side="left", fill="both", expand=True)
-
-        # Action bar above table
         action_bar = tk.Frame(right, bg=self.BG_MAIN)
         action_bar.pack(fill="x", pady=(0, 8))
 
@@ -459,18 +386,13 @@ class ExpenseTrackerApp:
             style="Custom.Vertical.TScrollbar",
         )
         self.tree.configure(yscrollcommand=scrollbar.set)
-
         self.tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
-
-        # Alternating row tags
         self.tree.tag_configure("odd",  background=self.ROW_ODD,  foreground=self.TEXT_LIGHT)
         self.tree.tag_configure("even", background=self.ROW_EVEN, foreground=self.TEXT_LIGHT)
 
-        # Double-click to edit
         self.tree.bind("<Double-1>", lambda e: self.on_edit())
 
-        # Status bar
         self.status_var = tk.StringVar(value="Ready")
         tk.Label(
             right,
@@ -481,18 +403,12 @@ class ExpenseTrackerApp:
             anchor="w",
         ).pack(fill="x", pady=(6, 0))
 
-    # ─────────────────────────────────────────
-    #  CRUD LOGIC
-    # ─────────────────────────────────────────
-
     def get_form_values(self):
         """Return a dict of current form values; returns None on validation error."""
         date     = self.date_entry.get_date().strftime("%Y-%m-%d")
         payee    = self.payee_var.get().strip()
         category = self.category_var.get().strip()
         note     = self.note_var.get().strip()
-
-        # Strip placeholder text
         placeholders = {"e.g. Amazon, Zomato…", "e.g. 500.00", "Short description…"}
         if payee    in placeholders: payee    = ""
         if note     in placeholders: note     = ""
@@ -545,8 +461,6 @@ class ExpenseTrackerApp:
 
         self.editing_id = values[0]
         self.submit_btn.config(text="💾  Save Changes", bg=self.WARNING)
-
-        # Populate form
         try:
             self.date_entry.set_date(datetime.strptime(str(values[1]), "%Y-%m-%d"))
         except Exception:
@@ -605,11 +519,6 @@ class ExpenseTrackerApp:
         self.date_entry.set_date(datetime.today())
         self.editing_id = None
         self.submit_btn.config(text="➕  Add Expense", bg=self.ACCENT)
-
-    # ─────────────────────────────────────────
-    #  TABLE HELPERS
-    # ─────────────────────────────────────────
-
     def refresh_table(self):
         rows = fetch_all_expenses()
         self.populate_table(rows)
@@ -651,11 +560,6 @@ class ExpenseTrackerApp:
             self.tree.item(k, tags=(tag,))
 
         self.tree.heading(col, command=lambda: self.sort_column(col, not reverse))
-
-
-# ─────────────────────────────────────────────
-#  ENTRY POINT
-# ─────────────────────────────────────────────
 
 if __name__ == "__main__":
     init_db()
